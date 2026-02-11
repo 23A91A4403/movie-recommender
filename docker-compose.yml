@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "${API_PORT:-8000}:8000"
+    env_file:
+      - .env
+    command: ["sh", "-c", "python src/data_preprocessing.py && python src/user_based_cf.py && python src/svd_model.py && python src/content_based_model.py && python src/evaluate_models.py && python src/cold_start.py && uvicorn src.api:app --host 0.0.0.0 --port 8000"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
